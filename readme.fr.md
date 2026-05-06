@@ -72,8 +72,11 @@ Cette `HMap` (associée à une fonction de hachage personnalisée gérant les co
 Le programme principal prend en argument un entier $n$ qui définit la taille de la chaîne de Markov (la taille du préfixe).
 
 **Exemple d'exécution (avec un préfixe de taille 3) :**
+Depuis la racine du projet :
+
 ```bash
-java Bovary 3
+javac src/Bovary/*.java
+java -cp src Bovary.Bovary 3
 ```
 
 *(Note : les fichiers textes sources de Madame Bovary doivent être présents dans le répertoire `/bovary` à la racine du projet).*
