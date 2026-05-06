@@ -72,8 +72,11 @@ This `HMap` (paired with a custom hash function handling collisions) allows for 
 The main program takes an integer $n$ as an argument, which defines the size of the Markov chain (the size of the prefix).
 
 **Execution example (with a prefix size of 3):**
+Right from the root folder of the project :
+
 ```bash
-java Bovary 3
+javac src/Bovary/*.java
+java -cp src Bovary.Bovary 3
 ```
 
 *(Note: the source text files of Madame Bovary must be present in the `/bovary` directory at the root of the project).*
