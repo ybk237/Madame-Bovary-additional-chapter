@@ -1,0 +1,14 @@
+# Fichiers compilés Java
+*.class
+
+# Dossiers d'IDE (si tu utilises VSCode, IntelliJ ou Eclipse)
+.vscode/
+.idea/
+*.iml
+.metadata/
+out/
+bin/
+
+# Fichiers systèmes
+.DS_Store
+Thumbs.db
