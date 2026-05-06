@@ -1,77 +1,79 @@
-# Le 36e Chapitre de Madame Bovary - Générateur de Texte
+*Version française: [Français](README.fr.md)*
 
-Ce projet en Java est un générateur de texte pseudo-aléatoire. Il a pour but de créer un chapitre supplémentaire du roman Madame Bovary en imitant le style de Gustave Flaubert, en s'entraînant sur le vocabulaire et la structure des 35 chapitres du roman.
+# The 36th Chapter of Madame Bovary - Text Generator
 
-## 🧠 Principe de Génération : Les Chaînes de Markov
+This Java project is a pseudo-random text generator. Its goal is to create an additional chapter for the novel *Madame Bovary* by imitating Gustave Flaubert's style, training on the vocabulary and structure of the novel's first 35 chapters.
 
-Le projet repose sur les **chaînes de Markov**. Le principe fondamental est que le choix du prochain mot à générer dépend uniquement d'un historique fini composé des $n$ mots précédents (appelé le **préfixe**).
+## 🧠 Generation Principle: Markov Chains
 
-Le processus se déroule en deux grandes phases : l'apprentissage et la génération.
+The project relies on **Markov chains**. The fundamental principle is that the choice of the next word to generate depends solely on a finite history composed of the $n$ preceding words (called the **prefix**).
 
-### 1. Phase d'apprentissage (Construction de la table)
+The process is divided into two main phases: training and generation.
 
-*   **La Règle :** Le programme lit le texte source et fait glisser une "fenêtre" de $n$ mots (le préfixe). Ce préfixe devient une **clé**. Le mot qui suit immédiatement cette fenêtre est ajouté à une **liste de valeurs** associée à cette clé. Si un préfixe apparaît plusieurs fois dans le texte, les mots qui le suivent sont ajoutés à la liste à chaque fois (ce qui préserve naturellement les probabilités d'apparition). Des balises `<START>` et `<END>` sont ajoutées pour marquer le début et la fin des phrases/chapitres.
+### 1. Training Phase (Table Construction)
 
-*   **Mini-exemple :** 
-    Imaginons un texte source très court : *"Emma aime le piano. Emma aime la lecture."* et choisissons une taille de préfixe $n = 2$.
-    Le programme va extraire les correspondances suivantes :
-    *   Clé : `[<START>, <START>]` ➔ Valeur ajoutée : `"Emma"`
-    *   Clé : `[<START>, Emma]` ➔ Valeur ajoutée : `"aime"`
-    *   Clé : `[Emma, aime]` ➔ Valeurs ajoutées : `"le"`, puis plus loin dans le texte, `"la"`
-    *   Clé : `[aime, le]` ➔ Valeur ajoutée : `"piano."`
+*   **The Rule:** The program reads the source text and slides a "window" of $n$ words (the prefix). This prefix becomes a **key**. The word immediately following this window is added to a **list of values** associated with this key. If a prefix appears multiple times in the text, the words following it are added to the list each time (which naturally preserves their probability of occurrence). `<START>` and `<END>` tags are added to mark the beginning and end of sentences/chapters.
+
+*   **Mini-example:** 
+    Let's imagine a very short source text: *"Emma likes the piano. Emma likes to read."* and choose a prefix size of $n = 2$.
+    The program will extract the following mappings:
+    *   Key: `[<START>, <START>]` ➔ Added value: `"Emma"`
+    *   Key: `[<START>, Emma]` ➔ Added value: `"likes"`
+    *   Key: `[Emma, likes]` ➔ Added values: `"the"`, then later in the text, `"to"`
+    *   Key: `[likes, the]` ➔ Added value: `"piano."`
     *   ...
-    *   Clé : `[la, lecture.]` ➔ Valeur ajoutée : `"<END>"`
+    *   Key: `[to, read.]` ➔ Added value: `"<END>"`
 
-### 🗺️ Représentation en mémoire : La structure `HMap`
+### 🗺️ Memory Representation: The `HMap` Structure
 
-Pour stocker ces milliers d'associations de manière optimale, nous utilisons une table de hachage implémentée de zéro (`HMap`). La clé (le préfixe) est transformée en un index numérique via une fonction de hachage.
+To store these thousands of associations optimally, we use a custom-built hash table (`HMap`). The key (the prefix) is transformed into a numerical index via a hash function.
 
-Voici un croquis rudimentaire de l'état de notre `HMap` après l'apprentissage du mini-exemple ci-dessus :
+Here is a basic sketch of our `HMap`'s state after training on the mini-example above:
 
 ```text
-Table de Hachage (HMap)
+Hash Table (HMap)
 =======================
-Index | Contenu (Liste chaînée pour gérer les collisions)
+Index | Content (Linked list to handle collisions)
 ---------------------------------------------------------
-[ 0 ] -> { Clé: [<START>, <START>] | Valeurs: ["Emma"] } -> null
-[ 1 ] -> { Clé: [<START>, Emma] | Valeurs: ["aime"] } -> null
-[ 2 ] -> { Clé: [Emma, aime] | Valeurs:["le", "la"] } -> null
-[ 3 ] -> { Clé: [la, lecture.] | Valeurs: [<END>] } -> null
-[ 4 ] -> { Clé: [aime, le]  | Valeurs: ["piano."] } -> { Clé: [aime, la] | Valeurs: ["lecture."] } -> null
+[ 0 ] -> { Key: [<START>, <START>] | Values: ["Emma"] } -> null
+[ 1 ] -> { Key: [<START>, Emma] | Values: ["likes"] } -> null
+[ 2 ] -> { Key: [Emma, likes] | Values:["the", "to"] } -> null
+[ 3 ] -> { Key: [to, read.] | Values: [<END>] } -> null
+[ 4 ] -> { Key: [likes, the]  | Values: ["piano."] } -> { Key: [likes, to] | Values: ["read."] } -> null
 ...
 ```
-*(Note sur l'index 4 : Une collision a eu lieu, les deux entrées distinctes sont chaînées).*
+*(Note on index 4: A collision occurred, so the two distinct entries are chained).*
 
-### 2. Phase de génération de texte
+### 2. Text Generation Phase
 
-*   **La Règle :** L'algorithme démarre avec un préfixe composé uniquement de balises `<START>`. Il interroge la `HMap` avec cette clé pour récupérer la liste des mots suivants possibles. Il tire **au hasard et de manière uniforme** un mot de cette liste, l'ajoute au texte final, puis fait "glisser" son préfixe d'un cran en y intégrant ce nouveau mot. Le cycle recommence jusqu'à tirer la balise `<END>`.
+*   **The Rule:** The algorithm starts with a prefix composed entirely of `<START>` tags. It queries the `HMap` with this key to retrieve the list of possible next words. It randomly and **uniformly picks** a word from this list, appends it to the final text, and then "slides" its prefix one step forward by incorporating this new word. The cycle repeats until the `<END>` tag is drawn.
 
-*   **Mini-exemple (en s'appuyant sur la HMap ci-dessus) :**
-    1.  **État initial :** Le préfixe courant est `[<START>, <START>]`.
-    2.  **Recherche :** La `HMap` nous renvoie la liste `["Emma"]`. On pioche "Emma".
-    3.  **Mise à jour :** Le texte généré est : *"Emma"*. Le nouveau préfixe devient `[<START>, Emma]`.
-    4.  **Recherche :** Pour la clé `[<START>, Emma]`, la `HMap` (index 1) renvoie `["aime"]`. On pioche "aime".
-    5.  **Mise à jour :** Le texte devient : *"Emma aime"*. Le nouveau préfixe devient `[Emma, aime]`.
-    6.  **Recherche :** Pour la clé `[Emma, aime]`, la `HMap` (index 2) renvoie la liste `["le", "la"]`. 
-    7.  **Tirage aléatoire :** L'algorithme tire au sort : disons qu'il pioche *"la"*.
-    8.  **Mise à jour :** Le texte généré est : *"Emma aime la"*. Le nouveau préfixe devient `[aime, la]`.
-    9.  **Recherche :** La `HMap` (index 4) renvoie `["lecture."]`. Fin de la phrase.
+*   **Mini-example (based on the HMap above):**
+    1.  **Initial state:** The current prefix is `[<START>, <START>]`.
+    2.  **Search:** The `HMap` returns the list `["Emma"]`. We pick "Emma".
+    3.  **Update:** The generated text is: *"Emma"*. The new prefix becomes `[<START>, Emma]`.
+    4.  **Search:** For the key `[<START>, Emma]`, the `HMap` (index 1) returns `["likes"]`. We pick "likes".
+    5.  **Update:** The text becomes: *"Emma likes"*. The new prefix becomes `[Emma, likes]`.
+    6.  **Search:** For the key `[Emma, likes]`, the `HMap` (index 2) returns the list `["the", "to"]`. 
+    7.  **Random draw:** The algorithm picks at random: let's say it picks *"the"*.
+    8.  **Update:** The generated text is: *"Emma likes the"*. The new prefix becomes `[likes, the]`.
+    9.  **Search:** The `HMap` (index 4) returns `["piano."]`. End of the sentence.
 
-*Plus la taille du préfixe ($n$) est grande, plus le texte généré ressemblera à des phrases exactes du livre original (car les listes de valeurs dans la `HMap` n'auront souvent qu'un seul choix possible). Plus $n$ est petit, plus le texte sera grammaticalement chaotique mais original.*
+*The larger the prefix size ($n$), the more the generated text will resemble exact sentences from the original book (because the value lists in the `HMap` will often only have one possible choice). The smaller $n$ is, the more grammatically chaotic but original the text will be.*
 
-## ⚙️ Implémentation et Structures de Données
+## ⚙️ Implementation and Data Structures
 
-Pour des raisons d'apprentissage, ce projet n'utilise pas les collections standards de Java, mais des structures de données implémentées à la main (plus précisément les listes chaînées et des tables de hachage)
+For educational purposes, this project does not use standard Java collections, but rather custom-built data structures implemented from scratch (specifically, linked lists and hash tables).
 
-Cette `HMap` (associée à une fonction de hachage personnalisée gérant les collisions) permet une complexité d'insertion et de recherche de $O(1)$ (en moyenne).
+This `HMap` (paired with a custom hash function handling collisions) allows for an insertion and search complexity of $O(1)$ (on average).
 
-## 🚀 Utilisation
+## 🚀 Usage
 
-Le programme principal prend en argument un entier $n$ qui définit la taille de la chaîne de Markov (la taille du préfixe).
+The main program takes an integer $n$ as an argument, which defines the size of the Markov chain (the size of the prefix).
 
-**Exemple d'exécution (avec un préfixe de taille 3) :**
+**Execution example (with a prefix size of 3):**
 ```bash
 java Bovary 3
 ```
 
-*(Note : les fichiers textes sources de Madame Bovary doivent être présents dans le répertoire `/bovary` à la racine du projet).*
+*(Note: the source text files of Madame Bovary must be present in the `/bovary` directory at the root of the project).*
