@@ -1,4 +1,4 @@
-*English version: [English](README.md)*
+*English version: [English](readme.md)*
 
 # Le 36e Chapitre de Madame Bovary - Générateur de Texte
 
