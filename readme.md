@@ -6,7 +6,7 @@ This Java project is a pseudo-random text generator. Its goal is to create an ad
 
 ## 🧠 Generation Principle: Markov Chains
 
-The project relies on **Markov chains**. The fundamental principle is that the choice of the next word to generate depends solely on a finite history composed of the $n$ preceding words (called the **prefix**).
+The project relies on **Markov chains**. The fundamental principle is that the choice of the next word to generate depends solely on a finite history composed of the `n` preceding words (called the **prefix**).
 
 The process is divided into two main phases: training and generation.
 
@@ -59,7 +59,7 @@ Index | Content (Linked list to handle collisions)
     8.  **Update:** The generated text is: *"Emma likes the"*. The new prefix becomes `[likes, the]`.
     9.  **Search:** The `HMap` (index 4) returns `["piano."]`. End of the sentence.
 
-*The larger the prefix size ($n$), the more the generated text will resemble exact sentences from the original book (because the value lists in the `HMap` will often only have one possible choice). The smaller $n$ is, the more grammatically chaotic but original the text will be.*
+*The larger the prefix size (`n`), the more the generated text will resemble exact sentences from the original book (because the value lists in the `HMap` will often only have one possible choice). The smaller `n` is, the more grammatically chaotic but original the text will be.*
 
 ## ⚙️ Implementation and Data Structures
 
@@ -69,7 +69,7 @@ This `HMap` (paired with a custom hash function handling collisions) allows for 
 
 ## 🚀 Usage
 
-The main program takes an integer $n$ as an argument, which defines the size of the Markov chain (the size of the prefix).
+The main program takes an integer `n` as an argument, which defines the size of the Markov chain (the size of the prefix).
 
 **Execution example (with a prefix size of 3):**
 Right from the root folder of the project :
