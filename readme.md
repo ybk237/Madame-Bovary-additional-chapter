@@ -1,4 +1,4 @@
-*Version française: [Français](README.fr.md)*
+*Version française: [Français](readme.fr.md)*
 
 # The 36th Chapter of Madame Bovary - Text Generator
 
